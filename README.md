@@ -1,2 +1,2 @@
-# LSGAN
-Experiment with LSGAN
+# VanillaGAN
+Experiment with Vanilla GAN.
