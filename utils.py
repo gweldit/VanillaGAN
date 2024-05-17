@@ -3,6 +3,13 @@ import matplotlib.pyplot as plt
 from typing import List
 import numpy as np
 import torch.nn.functional as F
+from sklearn.metrics import (
+    f1_score,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    matthews_corrcoef,
+)
 
 
 def get_device():
@@ -49,15 +56,6 @@ def plot_loss_curve(d_losses: List[float], g_losses: List[float], EPOCHS: int) -
     plt.legend()
     plt.savefig("loss_curve.png")
     plt.show()
-
-
-from sklearn.metrics import (
-    f1_score,
-    accuracy_score,
-    precision_score,
-    recall_score,
-    matthews_corrcoef,
-)
 
 
 def evaluate_gcn_model(gcn_model, graph_val_loader, vocab_size, device):
