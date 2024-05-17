@@ -2,6 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 from typing import List
 import numpy as np
+import torch.nn.functional as F
 
 
 def get_device():
@@ -48,3 +49,45 @@ def plot_loss_curve(d_losses: List[float], g_losses: List[float], EPOCHS: int) -
     plt.legend()
     plt.savefig("loss_curve.png")
     plt.show()
+
+
+from sklearn.metrics import (
+    f1_score,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    matthews_corrcoef,
+)
+
+
+def evaluate_gcn_model(gcn_model, graph_val_loader, vocab_size, device):
+    gcn_model.eval()
+    # val_losses = []
+    # val_f1_scores = []
+
+    y_true = []
+    y_pred = []
+
+    with torch.no_grad():
+        for data in graph_val_loader:
+            x = data.x[0].to(device)
+            x = F.one_hot(x, num_classes=vocab_size).float()
+            edge_index = data.edge_index.to(device)
+            edge_weight = data.weight.float().to(device)
+            y = torch.LongTensor(data.y).to(device)
+            batch = data.batch.to(device)
+
+            out = gcn_model(x, edge_index, edge_weight, batch)
+            # loss = F.cross_entropy(out, data.y)
+            # val_losses.append(loss.item())
+
+            preds = out.argmax(dim=1).cpu().numpy()
+            y_true.extend(data.y.cpu().numpy())
+            y_pred.extend(preds)
+
+        print("GCN performance:")
+        print(f"Accuracy: {accuracy_score(y_true, y_pred):.4f}")
+        print(f"Precision: {precision_score(y_true, y_pred):.4f}")
+        print(f"Recall: {recall_score(y_true, y_pred):.4f}")
+        print(f"F1 score: {f1_score(y_true, y_pred):.4f}")
+        print(f"MCC: {matthews_corrcoef(y_true, y_pred):.4f}")
