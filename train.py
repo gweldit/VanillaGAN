@@ -69,7 +69,7 @@ def train_gan_model(
     epochs,
     vocab_size,
     device="cpu",
-    tau=0.01,
+    tau=0.1,
     hard=False,
 ):
     generator_losses = []
