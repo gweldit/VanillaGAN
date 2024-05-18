@@ -4,7 +4,6 @@ from torch.nn import functional as F
 import torch.nn as nn
 from tqdm import tqdm
 from sklearn.metrics import f1_score
-import random
 
 
 def train_gcn_model(model, train_loader, vocab_size=342, epochs=20, device="cpu"):
