@@ -41,7 +41,7 @@ class Generator(nn.Module):
             nn.ReLU(),  # added ReLU here to avoid invalid logits to the gumbel softmax
         )
 
-    def forward(self, z, labels=None):
+    def forward(self, z, labels=None, tau=0.5, hard=False):
 
         if self.conditional_info:
             if labels is None:
@@ -52,7 +52,12 @@ class Generator(nn.Module):
         out = self.model(z)
         # reshape output to [batch_size, seq_len, output_dim]
         #  i.e., [batch_size, seq_len, vocab_size]
-        return out.view(out.shape[0], self.seq_len, self.output_dim)
+        gen_data = F.gumbel_softmax(
+            out.view(out.shape[0], self.seq_len, self.output_dim),
+            tau=tau,
+            hard=hard,
+        )
+        return gen_data
 
 
 class Discriminator(nn.Module):
