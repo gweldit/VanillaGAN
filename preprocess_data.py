@@ -1,10 +1,8 @@
 import os
-from pathlib import Path
-from random import shuffle
 from typing import List
-import torch
+
 import networkx as nx
-import numpy as np
+import torch
 from torch_geometric.utils.convert import from_networkx
 
 
@@ -33,9 +31,11 @@ def read_adfa_data(path: str):
     sequences = []
     labels = []
 
+    folder_name = ""
     # check labels when reading attack data to be able to assign label to 1
     label = 0  # indicates benign
     if "Attack_Data_Master" in path:
+        folder_name = "Attack_Data_Master"
         label = 1
         for sub_folder in list(sorted(os.listdir(path))):
             sub_folder_path = os.path.join(path, sub_folder)
@@ -50,13 +50,14 @@ def read_adfa_data(path: str):
                 labels.extend(sub_folder_labels)
 
         # return a list of sequences, and labels for the attack data
-        print(f"Read {len(sequences)} sequences from {path}")
+        print(f"Read {len(sequences)} sequences from {folder_name}")
         return sequences, labels
 
     # return a list of sequences, and labels for the benign data
 
     sequences, labels = read_subfolder(path, label=label)
-    print(f"Read {len(sequences)} sequences from {path}")
+    folder_name = path.split("/")[-1]
+    print(f"Read {len(sequences)} sequences from {folder_name}")
     return sequences, labels
 
 
