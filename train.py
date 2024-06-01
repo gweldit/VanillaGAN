@@ -1,9 +1,9 @@
 import torch
-from torch.optim import Adam
-from torch.nn import functional as F
 import torch.nn as nn
-from tqdm import tqdm
 from sklearn.metrics import f1_score
+from torch.nn import functional as F
+from torch.optim import Adam
+from tqdm import tqdm
 
 
 def train_gcn_model(model, train_loader, vocab_size=342, epochs=20, device="cpu"):
@@ -11,7 +11,7 @@ def train_gcn_model(model, train_loader, vocab_size=342, epochs=20, device="cpu"
     criterion = nn.CrossEntropyLoss()
 
     train_losses = []
-    val_losses = []
+    # val_losses = []
     train_f1_scores = []
 
     for epoch in range(epochs):

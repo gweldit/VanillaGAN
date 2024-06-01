@@ -1,6 +1,5 @@
 import torch.nn as nn
-from torch_geometric.nn import GCN
-from torch_geometric.nn import global_mean_pool
+from torch_geometric.nn import GCN, global_mean_pool
 
 
 class GCNModel(nn.Module):
