@@ -43,7 +43,7 @@ def train_gcn_model(model, train_loader, vocab_size=342, epochs=20, device="cpu"
             outputs = torch.argmax(torch.clone(pred).detach().cpu(), dim=1).numpy()
             targets = torch.clone(y).detach().cpu().numpy()
             # Compute the F1 score
-            f1 = f1_score(targets, outputs)
+            f1 = f1_score(targets, outputs, zero_division=0.0)
             f1_score_ += f1
 
         # Compute the average loss and F1 score

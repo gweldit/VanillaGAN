@@ -73,7 +73,6 @@ def evaluate_gcn_model(gcn_model, graph_val_loader, vocab_size, device):
             x = F.one_hot(x, num_classes=vocab_size).float()
             edge_index = data.edge_index.to(device)
             edge_weight = data.weight.float().to(device)
-            y = torch.LongTensor(data.y).to(device)
             batch = data.batch.to(device)
 
             out = gcn_model(x, edge_index, edge_weight, batch)
@@ -86,7 +85,9 @@ def evaluate_gcn_model(gcn_model, graph_val_loader, vocab_size, device):
 
         print("GCN performance:")
         print(f"Accuracy: {accuracy_score(y_true, y_pred):.4f}")
-        print(f"Precision: {precision_score(y_true, y_pred):.4f}")
-        print(f"Recall: {recall_score(y_true, y_pred):.4f}")
-        print(f"F1 score: {f1_score(y_true, y_pred):.4f}")
+        print(f"Precision: {precision_score(y_true, y_pred, average='macro'):.4f}")
+        print(f"Recall: {recall_score(y_true, y_pred, average='macro'):.4f}")
+        print(
+            f"F1 score: {f1_score(y_true, y_pred, average='macro', zero_division=0.0):.4f}"
+        )
         print(f"MCC: {matthews_corrcoef(y_true, y_pred):.4f}")
