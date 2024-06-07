@@ -42,7 +42,6 @@ class Generator(nn.Module):
         )
 
     def forward(self, z, labels=None, tau=0.5, hard=False):
-
         if self.conditional_info:
             if labels is None:
                 raise ValueError("labels must be provided if conditional_info is True")
