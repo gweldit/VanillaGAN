@@ -3,6 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+# Custom weights initialization for nn.Linear layers
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        # Initialize the weights with Xavier (Glorot) uniform initialization
+        torch.nn.init.xavier_uniform_(m.weight)
+        # Set biases to a small constant value, e.g., 0.01
+        if m.bias is not None:
+            m.bias.data.fill_(0.01)
+
+
 class Generator(nn.Module):
     def __init__(
         self,
