@@ -30,7 +30,9 @@ def get_device():
     return torch.device("cpu")
 
 
-def plot_loss_curve(d_losses: List[float], g_losses: List[float], EPOCHS: int) -> None:
+def plot_loss_curve(
+    d_losses: List[float], g_losses: List[float], EPOCHS: int, normalize=False
+) -> None:
     """Plot loss curve of critic and generator.
 
     Args:
@@ -38,25 +40,44 @@ def plot_loss_curve(d_losses: List[float], g_losses: List[float], EPOCHS: int) -
         g_losses (List[float]): List of generator losses.
         EPOCHS (int): Total number of epochs.
     """
-    # normalize losses to get a nice graph
-    gen_losses = np.asarray(g_losses)
-    critic_losses = np.asarray(d_losses)
-
-    gen_losses = (gen_losses - gen_losses.min()) / (gen_losses.max() - gen_losses.min())
-    critic_losses = np.asarray(d_losses)
-
-    critic_losses = (critic_losses - critic_losses.min()) / (
-        critic_losses.max() - critic_losses.min()
-    )
-    plt.figure(figsize=(20, 10))
     x = range(1, EPOCHS + 1)
-    plt.plot(x, critic_losses, color="red", label="Discriminator Loss")
-    plt.plot(x, gen_losses, color="blue", label="Generator Loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss Curve")
-    plt.legend()
-    plt.savefig("loss_curve.png")
-    plt.show()
+    if normalize:
+        # normalize losses to get a nice graph
+        g_losses = np.asarray(g_losses)
+        d_losses = np.asarray(d_losses)
+
+        g_losses = (g_losses - g_losses.min()) / (g_losses.max() - g_losses.min())
+        d_losses = np.asarray(d_losses)
+
+        d_losses = (d_losses - d_losses.min()) / (d_losses.max() - d_losses.min())
+
+        plt.figure(figsize=(20, 14))
+
+        plt.plot(x, d_losses, color="red", label="Discriminator Loss")
+        plt.plot(x, g_losses, color="blue", label="Generator Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss Curve")
+        plt.legend()
+        plt.savefig("loss_curve.png")
+        plt.show()
+
+    else:
+        # use subplot curves side by side
+        plt.figure(figsize=(20, 14))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(x, d_losses, color="red", label="Discriminator Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss Curve")
+        plt.legend()
+
+        plt.subplot(1, 2, 2)
+        plt.plot(x, g_losses, color="blue", label="Generator Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss Curve")
+        plt.legend()
+        plt.savefig("loss_curve.png")
+        plt.show()
 
 
 def evaluate_gcn_model(gcn_model, graph_val_loader, vocab_size, device):

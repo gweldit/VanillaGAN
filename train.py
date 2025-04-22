@@ -2,12 +2,16 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import f1_score
 from torch.nn import functional as F
-from torch.optim import Adam
 from tqdm import tqdm
 
 
-def train_gcn_model(model, train_loader, vocab_size=342, epochs=20, device="cpu"):
-    optimizer = Adam(model.parameters(), lr=0.001, weight_decay=5e-4, betas=(0.5, 0.99))
+def train_gcn_model(
+    model, train_loader, vocab_size=342, epochs=20, device="cpu", lr=1e-3
+):
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=0.001, weight_decay=5e-4, betas=(0.5, 0.99)
+    )
+
     criterion = nn.CrossEntropyLoss()
 
     train_losses = []
@@ -71,6 +75,7 @@ def train_gan_model(
     device="cpu",
     tau=0.1,
     hard=False,
+    warm_up_epochs=10,
 ):
     generator_losses = []
     discriminator_losses = []
@@ -79,6 +84,8 @@ def train_gan_model(
 
         gloss = 0.0
         dloss = 0.0
+        number_of_batches = len(train_loader)
+
         for data, labels in tqdm(train_loader):
             # print(labels)
 
@@ -118,40 +125,41 @@ def train_gan_model(
             disc_optimizer.step()
 
             # Train Generator
-            gen_optimizer.zero_grad()
-            z = torch.randn(data.shape[0], latent_dim).to(device)
+            if epoch >= warm_up_epochs:
+                gen_optimizer.zero_grad()
+                z = torch.randn(data.shape[0], latent_dim).to(device)
 
-            # generate fake data
-            gen_data = generator(z, labels, tau=tau, hard=hard)
+                # generate fake data
+                gen_data = generator(z, labels, tau=tau, hard=hard)
 
-            # perform discrete categorical sampling
-            # print("gen data shape", gen_data.shape)
-            # gen_data = F.gumbel_softmax(gen_data, tau=tau, hard=False, dim=-1)
+                # perform discrete categorical sampling
+                # print("gen data shape", gen_data.shape)
+                # gen_data = F.gumbel_softmax(gen_data, tau=tau, hard=False, dim=-1)
 
-            # feed fake data to discriminator
-            disc_fake = discriminator(gen_data, labels)
+                # feed fake data to discriminator
+                disc_fake = discriminator(gen_data, labels)
 
-            # compute generator loss: minmax GAN's generator loss
-            gen_loss = torch.mean(torch.log(1 - disc_fake))
+                # compute generator loss: minmax GAN's generator loss
+                gen_loss = torch.mean(torch.log(1 - disc_fake))
 
-            # for non-saturated minmax GAN's generator loss :==> generator: maximize log(D(G(z)))
-            # gen_loss = -torch.mean(torch.log(disc_fake))
+                # for non-saturated minmax GAN's generator loss :==> generator: maximize log(D(G(z)))
+                # gen_loss = -torch.mean(torch.log(disc_fake))
 
-            gloss += gen_loss.item()
+                gloss += gen_loss.item()
 
-            # backward pass
-            gen_loss.backward()
+                # backward pass
+                gen_loss.backward()
 
-            # update generator weights
-            gen_optimizer.step()
+                # update generator weights
+                gen_optimizer.step()
 
-        n_batches = len(train_loader)
-        dloss = torch.round(torch.tensor(dloss), decimals=4)
-        gloss = torch.round(torch.tensor(gloss), decimals=4)
+        dloss = torch.round(torch.tensor(dloss / number_of_batches), decimals=4)
+        gloss = torch.round(torch.tensor(gloss / number_of_batches), decimals=4)
 
         discriminator_losses.append(dloss)
         generator_losses.append(gloss)
 
-        print(f"D Loss: {disc_loss.item():.4f}, G Loss: {gen_loss.item():.4f}")
+        # print(f"D Loss: {disc_loss.item():.4f}, G Loss: {gen_loss.item():.4f}")
+        print(f"D Loss: {dloss.item():.4f}, G Loss: {gloss.item():.4f}")
 
     return generator_losses, discriminator_losses
